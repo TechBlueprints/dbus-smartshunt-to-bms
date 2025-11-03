@@ -1,0 +1,25 @@
+# User-specific configuration
+config.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Service runtime files
+service/supervise/
+service/log/@*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Workspace files
+*.code-workspace
+

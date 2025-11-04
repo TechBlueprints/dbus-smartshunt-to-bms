@@ -272,6 +272,7 @@ MIT License - See LICENSE file
 ## Credits
 
 - Based on [dbus-aggregate-batteries](https://github.com/Dr-Gigavolt/dbus-aggregate-batteries) by Anton Labanc PhD
+- Inspired by [dbus-serialbattery](https://github.com/mr-manuel/venus-os_dbus-serialbattery) by mr-manuel (Louis van der Walt)
 - Adapted and extended by Clinton Goudie-Nice
 - Uses Victron's velib_python library
 

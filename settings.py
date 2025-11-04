@@ -45,12 +45,20 @@ errors_in_config = []
 
 # Battery charge limits (optional - leave empty for pass-through only)
 MAX_CHARGE_VOLTAGE = get_float_from_config("DEFAULT", "MAX_CHARGE_VOLTAGE", None)
+MIN_BATTERY_VOLTAGE = get_float_from_config("DEFAULT", "MIN_BATTERY_VOLTAGE", None)
 MAX_CHARGE_CURRENT = get_float_from_config("DEFAULT", "MAX_CHARGE_CURRENT", None)
 MAX_DISCHARGE_CURRENT = get_float_from_config("DEFAULT", "MAX_DISCHARGE_CURRENT", None)
 
 # Validate limits if provided
 if MAX_CHARGE_VOLTAGE is not None and MAX_CHARGE_VOLTAGE <= 0:
     errors_in_config.append(f"MAX_CHARGE_VOLTAGE must be > 0 or left empty. Got: {MAX_CHARGE_VOLTAGE}")
+
+if MIN_BATTERY_VOLTAGE is not None:
+    if MIN_BATTERY_VOLTAGE <= 0:
+        errors_in_config.append(f"MIN_BATTERY_VOLTAGE must be > 0 or left empty. Got: {MIN_BATTERY_VOLTAGE}")
+    # Sanity check: min should be less than max
+    if MAX_CHARGE_VOLTAGE is not None and MIN_BATTERY_VOLTAGE >= MAX_CHARGE_VOLTAGE:
+        errors_in_config.append(f"MIN_BATTERY_VOLTAGE ({MIN_BATTERY_VOLTAGE}V) must be < MAX_CHARGE_VOLTAGE ({MAX_CHARGE_VOLTAGE}V)")
 
 if MAX_CHARGE_CURRENT is not None and MAX_CHARGE_CURRENT <= 0:
     errors_in_config.append(f"MAX_CHARGE_CURRENT must be > 0 or left empty. Got: {MAX_CHARGE_CURRENT}")

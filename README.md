@@ -1,12 +1,32 @@
 # dbus-smartshunt-to-bms
 
+## ⚠️ EXPERIMENTAL - USE AT YOUR OWN RISK ⚠️
+
+**THIS PROJECT IS RAGINGLY EXPERIMENTAL AND REALLY HASN'T BEEN TRIED OR RUN YET.**
+
+**YOU SHOULD NOT USE THIS SOFTWARE.** If you choose to use it anyway, it is **DEFINITELY AT YOUR OWN RISK.**
+
+This service directly controls battery charging behavior and publishes CVL (Charge Voltage Limit) values to your Victron system. Incorrect charge parameters can:
+- ❌ Damage your batteries
+- ❌ Cause fires or explosions
+- ❌ Void warranties
+- ❌ Destroy expensive equipment
+
+**By using this software, you accept full responsibility for any and all consequences, including but not limited to property damage, personal injury, or death.**
+
+---
+
 A Victron Venus OS service that converts SmartShunts into virtual Battery Management Systems (BMS).
 
 > **Note:** This project shares framework code with [dbus-aggregate-smartshunts](https://github.com/TechBlueprints/dbus-aggregate-smartshunts) and is derived from [dbus-aggregate-batteries](https://github.com/Dr-Gigavolt/dbus-aggregate-batteries) by Anton Labanc PhD.
 
 ## Purpose
 
+**⚠️ EXPERIMENTAL SOFTWARE - READ THE WARNING ABOVE ⚠️**
+
 If you have "dumb" batteries (no built-in BMS communication) monitored by SmartShunts, this service adds BMS functionality to enable DVCC charge control. Each SmartShunt gets converted into a virtual BMS device that can control charging.
+
+**This is experimental software that directly controls your charging system. It may not work correctly and could damage your equipment.**
 
 **Key Benefits:**
 - 🎯 **BMS functionality** - Adds charge control to SmartShunt-monitored batteries
@@ -36,8 +56,41 @@ For each SmartShunt on your system, this service creates a virtual BMS that:
 2. **Adds BMS-specific paths** - `/Info/MaxChargeVoltage`, `/Info/MaxChargeCurrent`, `/Info/MaxDischargeCurrent`
 3. **Adds charge control** - `/Io/AllowToCharge`, `/Io/AllowToDischarge` based on alarms and temperature
 4. **Appears as BMS** - ProductId 0xBA77 so Venus OS treats it as a battery with BMS
+5. **Dynamic CVL (optional)** - Automatically discovers charge settings from MPPTs/Orion XS and dynamically adjusts CVL based on charge phase (bulk/absorption/float)
+
+### Dynamic Charge Control (Advanced Feature)
+
+**⚠️ HIGHLY EXPERIMENTAL - This feature is completely untested and may behave unpredictably ⚠️**
+
+The service automatically discovers all charging devices on your system (MPPTs, Orion XS, SmartChargers) and reads their charge algorithm settings:
+
+- **Absorption Voltage** - Bulk charging target
+- **Float Voltage** - Maintenance charging voltage
+- **Tail Current** - When to transition from absorption to float
+- **Re-bulk Offset** - When to restart bulk charging from float
+
+Using these parameters, the virtual BMS implements a charge phase controller that mimics the behavior of a real BMS:
+
+- **Bulk Phase**: Publishes absorption voltage as CVL, allowing maximum charge current
+- **Absorption Phase**: Maintains absorption voltage, monitors tail current
+- **Float Phase**: Lowers CVL to float voltage for maintenance
+- **Re-bulk**: Returns to bulk if voltage drops below re-bulk threshold
+
+This creates a sophisticated charge control system that protects your batteries while maximizing charge efficiency.
+
+**Note**: Dynamic CVL requires at least one MPPT or Orion XS on your system with readable charge settings. If no charge sources are found, the service falls back to static CVL from your config.
 
 ## Installation
+
+### ⚠️ WARNING: EXPERIMENTAL SOFTWARE ⚠️
+
+**DO NOT INSTALL THIS ON A PRODUCTION SYSTEM.**
+
+This software is completely untested and may cause serious damage to your batteries and equipment. Install only on a test system where battery damage is acceptable.
+
+**YOU HAVE BEEN WARNED.**
+
+---
 
 ### Prerequisites
 
@@ -85,15 +138,32 @@ Copy `config.default.ini` to `config.ini` and customize:
 
 ```ini
 [DEFAULT]
-# Battery specifications (total for all batteries connected to THIS SmartShunt)
-MAX_CHARGE_VOLTAGE = 14.6      # Bulk charging voltage
+# Battery voltage limits
+MAX_CHARGE_VOLTAGE = 14.6      # Safety ceiling for CVL (V)
+MIN_BATTERY_VOLTAGE = 10.8     # Low voltage disconnect (V)
+
+# Battery current limits (per SmartShunt)
 MAX_CHARGE_CURRENT = 50        # Maximum charge current (A)
 MAX_DISCHARGE_CURRENT = 100    # Maximum discharge current (A)
 
 # Temperature thresholds
-TEMP_COLD_DANGER = 5.0         # Report coldest temp below this (°C)
-TEMP_HOT_DANGER = 35.0         # Report hottest temp above this (°C)
+TEMP_COLD_DANGER = 5.0         # Disable charging below this (°C)
+TEMP_HOT_DANGER = 45.0         # Disable charging above this (°C)
 ```
+
+**Important Configuration Notes:**
+
+- **`MAX_CHARGE_VOLTAGE`**: Safety ceiling for CVL. If you have MPPTs or Orion XS devices, the service will automatically read their absorption/float voltages and use those for dynamic CVL. This value acts as a safety ceiling - the published CVL will never exceed this value.
+
+- **`MIN_BATTERY_VOLTAGE`**: Low Voltage Disconnect (LVD) protection. Discharging is disabled (`/Io/AllowToDischarge = 0`) when voltage drops to or below this value. Critical for preventing over-discharge damage.
+  - LiFePO4 12V: 10.8V (11.0V for extra safety margin)
+  - LiFePO4 24V: 21.6V
+  - LiFePO4 48V: 43.2V
+  - Lead-Acid 12V: 11.5V
+
+- **Current Limits**: These are per SmartShunt. If a SmartShunt monitors multiple batteries, set these to the total for all batteries on that shunt.
+
+- **Temperature Limits**: Used to disable charging/discharging when temperatures are unsafe. Defaults are appropriate for LiFePO4.
 
 ### Advanced Settings
 
@@ -160,6 +230,19 @@ These are companion projects with different purposes:
 - Ensure virtual BMS has highest DeviceInstance priority
 - Check `/Info/MaxChargeVoltage` etc. are published
 
+### Dynamic CVL not working
+- Check logs for "Charge Source Discovery" output
+- Verify at least one MPPT or Orion XS is detected
+- Confirm charge parameters were read successfully
+- Look for "CVL updated" messages in logs during charging
+- If no charge sources found, service will use static MAX_CHARGE_VOLTAGE from config
+
+### CVL seems wrong
+- Check your MPPT/Orion XS charge settings in VictronConnect
+- Verify all chargers have consistent settings (absorption/float voltages should match)
+- Service uses consensus values from all discovered chargers
+- MAX_CHARGE_VOLTAGE in config acts as safety ceiling
+
 ## Uninstall
 
 ```bash
@@ -179,5 +262,9 @@ MIT License - See LICENSE file
 
 ## Support
 
+**⚠️ THIS IS EXPERIMENTAL SOFTWARE - SUPPORT IS LIMITED ⚠️**
+
 - GitHub Issues: https://github.com/TechBlueprints/dbus-smartshunt-to-bms/issues
 - Related Project: [dbus-aggregate-smartshunts](https://github.com/TechBlueprints/dbus-aggregate-smartshunts)
+
+**Use this software at your own risk. No warranties or guarantees of any kind are provided.**

@@ -1,12 +1,16 @@
 # dbus-smartshunt-to-bms
 
+**Victron Venus OS D-Bus Service: SmartShunt to Virtual BMS Converter**
+
+Convert Victron SmartShunts into virtual Battery Management Systems (BMS) with dynamic charge control for Cerbo GX, Venus GX, and other Venus OS devices.
+
 ## ⚠️ EXPERIMENTAL - USE AT YOUR OWN RISK ⚠️
 
 **THIS PROJECT IS RAGINGLY EXPERIMENTAL AND REALLY HASN'T BEEN TRIED OR RUN YET.**
 
 **YOU SHOULD NOT USE THIS SOFTWARE.** If you choose to use it anyway, it is **DEFINITELY AT YOUR OWN RISK.**
 
-This service directly controls battery charging behavior and publishes CVL (Charge Voltage Limit) values to your Victron system. Incorrect charge parameters can:
+This service directly controls battery charging behavior and publishes CVL (Charge Voltage Limit) values to your Victron Energy system. Incorrect charge parameters can:
 - ❌ Damage your batteries
 - ❌ Cause fires or explosions
 - ❌ Void warranties
@@ -16,7 +20,14 @@ This service directly controls battery charging behavior and publishes CVL (Char
 
 ---
 
-A Victron Venus OS service that converts SmartShunts into virtual Battery Management Systems (BMS).
+## Overview
+
+A Venus OS service that converts Victron SmartShunt battery monitors into virtual Battery Management Systems (BMS) with DVCC charge control, dynamic CVL, and comprehensive battery protection.
+
+**For:** Victron Energy systems (Cerbo GX, Venus GX, Raspberry Pi running Venus OS)  
+**Monitors:** SmartShunt 500A, SmartShunt IP65  
+**Supports:** LiFePO4, Lead-Acid, LTO batteries  
+**Features:** Dynamic CVL, MPPT integration, temperature protection, low voltage disconnect
 
 > **Note:** This project shares framework code with [dbus-aggregate-smartshunts](https://github.com/TechBlueprints/dbus-aggregate-smartshunts) and is derived from [dbus-aggregate-batteries](https://github.com/Dr-Gigavolt/dbus-aggregate-batteries) by Anton Labanc PhD.
 
@@ -29,18 +40,22 @@ If you have "dumb" batteries (no built-in BMS communication) monitored by SmartS
 **This is experimental software that directly controls your charging system. It may not work correctly and could damage your equipment.**
 
 **Key Benefits:**
-- 🎯 **BMS functionality** - Adds charge control to SmartShunt-monitored batteries
-- 🛡️ **Safety** - Provides `/Io/AllowToCharge` and `/Io/AllowToDischarge` flags based on alarms and temperature
-- ⚡ **DVCC integration** - Publishes CVL/CCL/DCL for Multi/Quattro/MPPT control
-- 🔧 **Zero aggregation** - One BMS service per SmartShunt (use dbus-aggregate-smartshunts for aggregation)
-- 📊 **Pass-through monitoring** - All SmartShunt data passed through unchanged
+- 🎯 **Virtual BMS** - Converts Victron SmartShunt into BMS for DVCC control
+- 🛡️ **Battery Protection** - Temperature limits, low voltage disconnect, alarm monitoring
+- ⚡ **DVCC Integration** - Publishes CVL/CCL/DCL for Multi/Quattro/MPPT/Orion XS control
+- 🔄 **Dynamic CVL** - Auto-discovers MPPT charge settings (absorption/float/re-bulk)
+- 📊 **Full Passthrough** - All SmartShunt data (voltage, current, SoC, alarms, history)
+- 🔧 **Per-Battery Control** - One virtual BMS per SmartShunt (no aggregation)
+- 🔋 **Multi-Chemistry** - LiFePO4, Lead-Acid, LTO support
 
 ## Use Cases
 
 **Use this project if:**
 - ✅ You have batteries WITHOUT built-in BMS communication
-- ✅ Each battery has a SmartShunt for monitoring
-- ✅ You want DVCC to control charging based on SmartShunt alarms/temperature
+- ✅ Each battery has a Victron SmartShunt for monitoring
+- ✅ You want DVCC to control Victron Multi/Quattro/MPPT/Orion XS charging
+- ✅ You need dynamic CVL with charge phase control (Bulk/Absorption/Float)
+- ✅ You want battery protection (temperature, voltage, current limits)
 - ✅ You need each battery to appear as a BMS device in Venus OS
 
 **Don't use this project if:**
@@ -257,7 +272,7 @@ MIT License - See LICENSE file
 ## Credits
 
 - Based on [dbus-aggregate-batteries](https://github.com/Dr-Gigavolt/dbus-aggregate-batteries) by Anton Labanc PhD
-- Adapted and extended by TechBlueprints
+- Adapted and extended by Clinton Goudie-Nice
 - Uses Victron's velib_python library
 
 ## Support

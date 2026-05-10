@@ -10,6 +10,18 @@ Convert Victron SmartShunts into virtual Battery Management Systems (BMS) with d
 
 **YOU SHOULD NOT USE THIS SOFTWARE.** If you choose to use it anyway, it is **DEFINITELY AT YOUR OWN RISK.**
 
+## Status: Not Deployed
+
+This was an exploratory / experimental project. **It has never been deployed
+or run on any system.** It is not installed on any Cerbo GX, dev or
+production. The repository is kept around as a reference for the design
+ideas (virtual BMS shape, dynamic CVL, charge phase controller skeleton),
+but the code itself is unfinished and known to contain syntax errors.
+
+There is no active work on this project. If you are looking for the
+actively-deployed SmartShunt aggregation service, see
+[dbus-aggregate-smartshunts](https://github.com/TechBlueprints/dbus-aggregate-smartshunts).
+
 This service directly controls battery charging behavior and publishes CVL (Charge Voltage Limit) values to your Victron Energy system. Incorrect charge parameters can:
 - ❌ Damage your batteries
 - ❌ Cause fires or explosions

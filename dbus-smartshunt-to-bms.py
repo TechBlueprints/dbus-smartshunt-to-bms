@@ -445,7 +445,7 @@ class SmartShuntBMS:
             
             # Get max CVL from config or use safe default
             max_cvl = self.config.get('MAX_CHARGE_VOLTAGE', 14.60)
-            
+                        
             # Create charge phase controller
             self._charge_controller = ChargePhaseController(mppt_config, shunt_config, max_cvl)
             
@@ -620,7 +620,7 @@ class SmartShuntBMS:
                 bus["/Alarms/HighChargeTemperature"] = 2 if temperature >= temp_hot else 0
                 bus["/Alarms/LowChargeTemperature"] = 2 if temperature <= temp_cold else 0
                 bus["/Alarms/HighTemperature"] = 2 if temperature >= temp_hot else 0
-            
+        
             # Update history extremes (track over time)
             if temperature is not None:
                 if not hasattr(self, '_hist_min_temp') or temperature < self._hist_min_temp:
@@ -692,7 +692,7 @@ class SmartShuntBMS:
                     logging.debug(f"{service}: Discharging disabled (voltage {voltage:.2f}V <= MIN_BATTERY_VOLTAGE {min_v:.2f}V)")
             
             if get_value("/Alarms/LowTemperature", 0) > 0:
-                allow_discharge = 0
+                    allow_discharge = 0
                 logging.debug(f"{service}: Discharging disabled (low temperature alarm)")
                 
                 bus["/Io/AllowToCharge"] = allow_charge
@@ -721,7 +721,7 @@ class SmartShuntToBMSManager:
         
         logging.info("### SmartShunt to BMS Converter ###")
         logging.info(f"Version: {VERSION}")
-        
+            
         # Discover charge sources (MPPTs, chargers, etc.) - do this once at startup
         self._discover_charge_sources()
         
@@ -780,14 +780,14 @@ class SmartShuntToBMSManager:
                         continue
                     
                     try:
-                        # Check if it's a SmartShunt (ProductId 0xA389)
+                # Check if it's a SmartShunt (ProductId 0xA389)
                     obj = bus.get_object(service_name, '/ProductId')
                     iface = dbus.Interface(obj, 'com.victronenergy.BusItem')
                     product_id = iface.GetValue()
                         
                     if product_id == 0xA389:  # SmartShunt
                             # Skip virtual aggregates (check for /Devices/0/Virtual flag)
-                            try:
+                        try:
                                 obj = bus.get_object(service_name, '/Devices/0/Virtual')
                                 iface = dbus.Interface(obj, 'com.victronenergy.BusItem')
                                 is_virtual = iface.GetValue()
@@ -803,7 +803,7 @@ class SmartShuntToBMSManager:
                             device_instance = int(obj.Get('com.victronenergy.BusItem', 'Value', dbus_interface='org.freedesktop.DBus.Properties'))
                             
                             # Get custom name for logging
-                            try:
+        try:
                                 obj = bus.get_object(service_name, '/CustomName')
                                 custom_name = str(obj.Get('com.victronenergy.BusItem', 'Value', dbus_interface='org.freedesktop.DBus.Properties'))
                             except:
